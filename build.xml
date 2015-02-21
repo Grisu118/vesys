@@ -43,7 +43,7 @@
 		</java>
 	</target>
 	
-	<target name="run.sockets" depends="compile" description="launches sockets bank">
+	<target name="run.sockets.localhost" depends="compile" description="launches sockets bank">
 		<java classname="bank.Client" fork="yes" dir=".">
 			<arg value="bank.sockets.Driver"/>
 			<arg value="localhost"/>
@@ -51,5 +51,13 @@
 			<classpath refid="bank.class.path"/>
 		</java>
 	</target>
-	
+
+    <target name="run.sockets.BLPC0001" depends="compile" description="launches sockets bank">
+        <java classname="bank.Client" fork="yes" dir=".">
+            <arg value="bank.sockets.Driver"/>
+            <arg value="BLPC0001"/>
+            <arg value="1234"/>
+            <classpath refid="bank.class.path"/>
+        </java>
+    </target>
 </project>
