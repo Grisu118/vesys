@@ -165,14 +165,14 @@ public class FunctionalityTest implements BankTest {
 				msg = "not all names are properly supported";
 			bank.closeAccount(id);
 			
-			name = "Peter M�ller;junior";
+			name = "Peter Müller;junior";
 			id = bank.createAccount(name);
 			a = bank.getAccount(id);
 			if( !name.equals(a.getOwner()))
 				msg = "not all names are properly supported";
 			bank.closeAccount(id);
 			
-			name = "Peter:M�ller";
+			name = "Peter:Müller";
 			id = bank.createAccount(name);
 			a = bank.getAccount(id);
 			if( !name.equals(a.getOwner()))
