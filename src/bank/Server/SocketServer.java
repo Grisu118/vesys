@@ -14,6 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
 
+@SuppressWarnings("InfiniteLoopStatement")
 public class SocketServer {
 
     public static void main(String args[]) throws IOException {
@@ -27,29 +28,30 @@ public class SocketServer {
         }
     }
 
-    public static final int GETACCOUNTNUMBERS = 10;
-    public static final int CREATEACC = 20;
-    public static final int CLOSEACC = 30;
-    public static final int GETACC = 40;
-    public static final int TRANSFER = 50;
-    public static final int SETINACITVE = 100;
-    public static final int DEPOSIT = 110;
-    public static final int WITHDRAW = 120;
-    public static final int INACITVEEX = 500;
-    public static final int OVERDRAWEX = 510;
-    public static final int NULLPTR = 520;
+    public static final String GETACCOUNTNUMBERS = "10";
+    public static final String CREATEACC = "20";
+    public static final String CLOSEACC = "30";
+    public static final String GETACC = "40";
+    public static final String TRANSFER = "50";
+    public static final String SETINACITVE = "100";
+    public static final String DEPOSIT = "110";
+    public static final String WITHDRAW = "120";
+    public static final String INACITVEEX = "500";
+    public static final String OVERDRAWEX = "510";
+    public static final String NULLPTR = "520";
+
+    private static final Map<String, Account> accounts = new HashMap<>();
+    private static int num = 0;
 
     static class BankHandler implements Bank, Runnable {
         private Socket socket;
-        private final PrintWriter out;
+        private final BufferedWriter out;
         private final BufferedReader in;
 
-        private final Map<String, Account> accounts = new HashMap<>();
-        private int num = 0;
 
         public BankHandler(Socket s) throws IOException {
             socket = s;
-            out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
+            out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
         }
 
@@ -59,7 +61,7 @@ public class SocketServer {
 
                 while (input != null) {
                     System.out.println("Input: " + input);
-                    switch (Integer.parseInt(input)) {
+                    switch (input) {
                         case GETACCOUNTNUMBERS:
                             getAccountNumbers();
                             break;
@@ -75,14 +77,17 @@ public class SocketServer {
                         case TRANSFER:
                             try {
                                 transfer(getAccount(in.readLine()), getAccount(in.readLine()), Double.parseDouble(in.readLine()));
-                                out.println(true);
+                                out.write("true");
+                                out.newLine();
                                 out.flush();
                             } catch (InactiveException e) {
-                                out.println(INACITVEEX);
+                                out.write(INACITVEEX);
+                                out.newLine();
                                 out.flush();
                                 e.printStackTrace();
                             } catch (OverdrawException e) {
-                                out.println(OVERDRAWEX);
+                                out.write(OVERDRAWEX);
+                                out.newLine();
                                 out.flush();
                                 e.printStackTrace();
                             }
@@ -93,10 +98,12 @@ public class SocketServer {
                         case DEPOSIT:
                             try {
                                 getAccount(in.readLine()).deposit(Double.parseDouble(in.readLine()));
-                                out.println(true);
+                                out.write("true");
+                                out.newLine();
                                 out.flush();
                             } catch (InactiveException e) {
-                                out.println(INACITVEEX);
+                                out.write(INACITVEEX);
+                                out.newLine();
                                 out.flush();
                                 e.printStackTrace();
                             }
@@ -104,20 +111,24 @@ public class SocketServer {
                         case WITHDRAW:
                             try {
                                 getAccount(in.readLine()).withdraw(Double.parseDouble(in.readLine()));
-                                out.println(true);
+                                out.write("true");
+                                out.newLine();
                                 out.flush();
                             } catch (InactiveException e) {
-                                out.println(INACITVEEX);
+                                out.write(INACITVEEX);
+                                out.newLine();
                                 out.flush();
                                 e.printStackTrace();
                             } catch (OverdrawException e) {
-                                out.println(OVERDRAWEX);
+                                out.write(OVERDRAWEX);
+                                out.newLine();
                                 out.flush();
                                 e.printStackTrace();
                             }
                             break;
                         default:
-                            out.println("Error");
+                            out.write("Error");
+                            out.newLine();
                             out.flush();
                     }
                     input = in.readLine();
@@ -129,7 +140,7 @@ public class SocketServer {
                 try {
                     socket.close();
                 } catch (IOException e) {
-                    System.err.println(e);
+                    e.printStackTrace();
                 }
             }
         }
@@ -144,11 +155,13 @@ public class SocketServer {
                 String s = it.next().getNumber();
                 if (accounts.get(s).isActive()) {
                     System.out.println(s);
-                    out.println(s);
+                    out.write(s);
+                    out.newLine();
                     set.add(s);
                 }
             }
-            out.println("-END-");
+            out.write("-END-");
+            out.newLine();
             System.out.println("-END-");
             out.flush();
             return set;
@@ -169,10 +182,11 @@ public class SocketServer {
             accnum.append('-');
             String s = String.format("%06d", ++num);
             accnum.append(s.substring(0, 4)).append("-").append(s.substring(4, 6));
-            Account a = new Account(owner, accnum.toString().toUpperCase(), out, in);
+            Account a = new Account(owner, accnum.toString().toUpperCase(), out);
             accounts.put(a.getNumber(), a);
             System.out.println("Account Created: " + a.getNumber());
-            out.println(a.getNumber());
+            out.write(a.getNumber());
+            out.newLine();
             out.flush();
             return a.getNumber();
         }
@@ -183,14 +197,20 @@ public class SocketServer {
         }
 
         public void silentGetAccount(String number) throws IOException {
+            System.out.println("Entered Gett Acc: " + number);
             Account a = accounts.get(number);
             if (a == null) {
-                out.println(NULLPTR);
+                System.out.println("Is null: ");
+                out.write(NULLPTR);
+                out.newLine();
                 out.flush();
             } else {
-                out.println(a.getOwner());
-                out.println(a.getBalance());
-                out.println(a.isActive());
+                out.write(a.getOwner());
+                out.newLine();
+                out.write(Double.toString(a.getBalance()));
+                out.newLine();
+                out.write(Boolean.toString(a.isActive()));
+                out.newLine();
                 out.flush();
             }
         }
@@ -216,14 +236,12 @@ public class SocketServer {
         private double balance;
         private boolean active = true;
 
-        private final PrintWriter out;
-        private final BufferedReader in;
+        private final BufferedWriter out;
 
-        Account(String owner, String number, PrintWriter out, BufferedReader in) {
+        Account(String owner, String number, BufferedWriter out) {
             this.owner = owner;
             this.number = number;
             this.out = out;
-            this.in = in;
         }
 
         @Override
@@ -249,11 +267,13 @@ public class SocketServer {
         public boolean setInactive() throws IOException {
             if (balance == 0 && active) {
                 active = false;
-                out.println(true);
+                out.write("true");
+                out.newLine();
                 out.flush();
                 return true;
             }
-            out.println(false);
+            out.write("false");
+            out.newLine();
             out.flush();
             return false;
         }
