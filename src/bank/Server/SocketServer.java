@@ -55,8 +55,6 @@ public class SocketServer {
 
         public void run() {
             try {
-                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 String input = in.readLine();
 
                 while (input != null) {
