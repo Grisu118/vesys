@@ -18,7 +18,7 @@ import bank.gui.BankGUI;
  * loaded and used to access the bank. This class needs a public constructor.
  * 
  * <pre>
- * Usage: java bank.Client &lt;classname&gt;
+ * Usage: java Client &lt;classname&gt;
  * </pre>
  * 
  * E.g. start the application with one of the following commands. The additional
@@ -26,8 +26,8 @@ import bank.gui.BankGUI;
  * implementation.
  * 
  * <pre>
- * java bank.Client bank.local.Driver
- * java bank.Client bank.sockets.Driver localhost 1234
+ * java Client Driver
+ * java Client Driver localhost 1234
  * </pre>
  * 
  * @see BankDriver
