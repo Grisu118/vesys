@@ -5,6 +5,7 @@
 
 package bank.Server;
 
+import bank.Account;
 import bank.Bank;
 import bank.InactiveException;
 import bank.OverdrawException;
@@ -40,17 +41,16 @@ public class SocketServer {
     public static final String OVERDRAWEX = "510";
     public static final String NULLPTR = "520";
 
-    private static final Map<String, Account> accounts = new HashMap<>();
-    private static int num = 0;
-
-    static class BankHandler implements Bank, Runnable {
+    static class BankHandler implements Runnable {
         private Socket socket;
+        private Bank bank;
         private final BufferedWriter out;
         private final BufferedReader in;
 
 
         public BankHandler(Socket s) throws IOException {
             socket = s;
+            bank = new ServerBank();
             out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
             in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
         }
@@ -58,25 +58,47 @@ public class SocketServer {
         public void run() {
             try {
                 String input = in.readLine();
-
                 while (input != null) {
-                    System.out.println("Input: " + input);
                     switch (input) {
                         case GETACCOUNTNUMBERS:
-                            getAccountNumbers();
+                            for (String s : bank.getAccountNumbers()) {
+                                out.write(s);
+                                out.newLine();
+                            }
+                            out.write("-END-");
+                            out.newLine();
+                            out.flush();
                             break;
                         case CREATEACC:
-                            createAccount(in.readLine());
+                            out.write(bank.createAccount(in.readLine()));
+                            out.newLine();
+                            out.flush();
                             break;
                         case CLOSEACC:
-                            closeAccount(in.readLine());
+                            out.write(Boolean.toString(bank.closeAccount(in.readLine())));
+                            out.newLine();
+                            out.flush();
                             break;
                         case GETACC:
-                            silentGetAccount(in.readLine());
+                            Account a = bank.getAccount(in.readLine());
+                            if (a == null) {
+                                System.out.println("Is null: ");
+                                out.write(NULLPTR);
+                                out.newLine();
+                                out.flush();
+                            } else {
+                                out.write(a.getOwner());
+                                out.newLine();
+                                out.write(Double.toString(a.getBalance()));
+                                out.newLine();
+                                out.write(Boolean.toString(a.isActive()));
+                                out.newLine();
+                                out.flush();
+                            }
                             break;
                         case TRANSFER:
                             try {
-                                transfer(getAccount(in.readLine()), getAccount(in.readLine()), Double.parseDouble(in.readLine()));
+                                bank.transfer(bank.getAccount(in.readLine()), bank.getAccount(in.readLine()), Double.parseDouble(in.readLine()));
                                 out.write("true");
                                 out.newLine();
                                 out.flush();
@@ -93,11 +115,11 @@ public class SocketServer {
                             }
                             break;
                         case SETINACITVE:
-                            getAccount(in.readLine()).setInactive();
+                            bank.getAccount(in.readLine()).setInactive();
                             break;
                         case DEPOSIT:
                             try {
-                                getAccount(in.readLine()).deposit(Double.parseDouble(in.readLine()));
+                                bank.getAccount(in.readLine()).deposit(Double.parseDouble(in.readLine()));
                                 out.write("true");
                                 out.newLine();
                                 out.flush();
@@ -110,7 +132,7 @@ public class SocketServer {
                             break;
                         case WITHDRAW:
                             try {
-                                getAccount(in.readLine()).withdraw(Double.parseDouble(in.readLine()));
+                                bank.getAccount(in.readLine()).withdraw(Double.parseDouble(in.readLine()));
                                 out.write("true");
                                 out.newLine();
                                 out.flush();
@@ -145,163 +167,5 @@ public class SocketServer {
             }
         }
 
-
-        @Override
-        public Set<String> getAccountNumbers() throws IOException {
-            System.out.println("getAccountNumbers");
-            Iterator<Account> it = accounts.values().iterator();
-            HashSet<String> set = new HashSet<>();
-            while (it.hasNext()) {
-                String s = it.next().getNumber();
-                if (accounts.get(s).isActive()) {
-                    System.out.println(s);
-                    out.write(s);
-                    out.newLine();
-                    set.add(s);
-                }
-            }
-            out.write("-END-");
-            out.newLine();
-            System.out.println("-END-");
-            out.flush();
-            return set;
-        }
-
-        @Override
-        public String createAccount(String owner) throws IOException {
-            String[] names = owner.split(" ");
-            StringBuilder accnum = new StringBuilder();
-            if (names.length > 1) {
-                accnum.append(names[0].charAt(0));
-                accnum.append(names[1].charAt(0));
-            } else if (owner.length() > 1) {
-                accnum.append(owner.substring(0, 2));
-            } else {
-                accnum.append(owner);
-            }
-            accnum.append('-');
-            String s = String.format("%06d", ++num);
-            accnum.append(s.substring(0, 4)).append("-").append(s.substring(4, 6));
-            Account a = new Account(owner, accnum.toString().toUpperCase(), out);
-            accounts.put(a.getNumber(), a);
-            System.out.println("Account Created: " + a.getNumber());
-            out.write(a.getNumber());
-            out.newLine();
-            out.flush();
-            return a.getNumber();
-        }
-
-        @Override
-        public boolean closeAccount(String number) throws IOException {
-            return accounts.get(number).setInactive();
-        }
-
-        public void silentGetAccount(String number) throws IOException {
-            System.out.println("Entered Gett Acc: " + number);
-            Account a = accounts.get(number);
-            if (a == null) {
-                System.out.println("Is null: ");
-                out.write(NULLPTR);
-                out.newLine();
-                out.flush();
-            } else {
-                out.write(a.getOwner());
-                out.newLine();
-                out.write(Double.toString(a.getBalance()));
-                out.newLine();
-                out.write(Boolean.toString(a.isActive()));
-                out.newLine();
-                out.flush();
-            }
-        }
-
-        @Override
-        public Account getAccount(String number) throws IOException {
-            return accounts.get(number);
-        }
-
-        @Override
-        public void transfer(bank.Account from, bank.Account to, double amount)
-                throws IOException, InactiveException, OverdrawException {
-            System.out.println("Entered Transfer");
-            from.withdraw(amount);
-            to.deposit(amount);
-            System.out.println("Left Transfer");
-        }
     }
-
-    static class Account implements bank.Account {
-        private String number;
-        private String owner;
-        private double balance;
-        private boolean active = true;
-
-        private final BufferedWriter out;
-
-        Account(String owner, String number, BufferedWriter out) {
-            this.owner = owner;
-            this.number = number;
-            this.out = out;
-        }
-
-        @Override
-        public double getBalance() throws IOException {
-            return balance;
-        }
-
-        @Override
-        public String getOwner() throws IOException {
-            return owner;
-        }
-
-        @Override
-        public String getNumber() throws IOException {
-            return number;
-        }
-
-        @Override
-        public boolean isActive() throws IOException {
-            return active;
-        }
-
-        public boolean setInactive() throws IOException {
-            if (balance == 0 && active) {
-                active = false;
-                out.write("true");
-                out.newLine();
-                out.flush();
-                return true;
-            }
-            out.write("false");
-            out.newLine();
-            out.flush();
-            return false;
-        }
-
-        @Override
-        public void deposit(double amount) throws IOException, InactiveException {
-            System.out.println("Entered deposit");
-            if (!active) {
-                throw new InactiveException(number + " is Inactive!");
-            }
-            balance += Math.abs(amount);
-            System.out.println("Left deposit");
-        }
-
-        @Override
-        public void withdraw(double amount) throws IOException, InactiveException, OverdrawException {
-            System.out.println("Entered withdraw");
-            if (!active) {
-                throw new InactiveException(number + " is Inactive!");
-            }
-            if (balance < Math.abs(amount)) {
-                throw new OverdrawException();
-            }
-            balance -= Math.abs(amount);
-            System.out.println("Left withdraw");
-        }
-
-
-    }
-
 }

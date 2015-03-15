@@ -45,6 +45,13 @@ public interface Account {
 	 */
 	boolean isActive() throws IOException;
 
+    /**
+     * Sets this account to inactive.
+     * @return true if worked, false if amount != 0 or already inactive.
+     * @throws IOException if a remoting or communication problem occurs.
+     */
+    boolean setInactive() throws IOException;
+
 	/**
 	 * Deposits the given amount on the account.
 	 * 

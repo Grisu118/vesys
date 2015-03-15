@@ -218,6 +218,14 @@ public class Driver implements bank.BankDriver {
             }
 		}
 
+        public boolean setInactive() {
+            if (balance == 0 && active) {
+                active = false;
+                return true;
+            }
+            return false;
+        }
+
 		@Override
 		public void withdraw(double amount) throws IOException, InactiveException, OverdrawException {
             updateAcc();
