@@ -34,13 +34,13 @@
             </div>
             <div class="uk-width-1-2">
                 <div class="uk-form-row">
-                    <button type="button" class="uk-button uk-button-success">Deposit Money</button>
+                    <button type="button" id="depositButton" class="uk-button uk-button-success" onclick="depositModal()">Deposit Money</button>
                 </div>
                 <div class="uk-form-row">
-                    <button type="button" class="uk-button uk-button-danger">Withdraw Money</button>
+                    <button type="button" id="withdrawButton" class="uk-button uk-button-danger" onclick="withdrawModal()">Withdraw Money</button>
                 </div>
                 <div class="uk-form-row">
-                    <button type="button" class="uk-button">Transfer Money</button>
+                    <button type="button" id="tranferButton" class="uk-button">Transfer Money</button>
                 </div>
             </div>
         </div>
@@ -52,7 +52,7 @@
     <button class="uk-button" onclick="refresh()">Refresh</button>
 </div>
 <footer class="uk-text-center">
-    <p style="text-shadow: 0px 1px 1px #FFF; color: #9F9F9F; font-size: 10px;">2015 © Grisu118</p>
+    <p style="text-shadow: 0 1px 1px #FFF; color: #9F9F9F; font-size: 10px;">2015 © FHNW</p>
 </footer>
 
 <div id="newAccMod" class="uk-modal">
@@ -74,6 +74,23 @@
         </div>
     </div>
 </div>
+
+<div id="accMod" class="uk-modal">
+    <div class="uk-modal-dialog">
+        <div class="uk-modal-header" id="accModHeader"></div>
+        <form class="uk-form uk-form-horizontal">
+            <div class="uk-form-row">
+                <label class="uk-form-label" for="accModAmount">Amount: </label>
+                <input type="number" name="accModAmount" id="accModAmount">
+                <input type="hidden" id="accModDeposit">
+            </div>
+        </form>
+        <div class="uk-modal-footer">
+            <button type="button" id="accModButton" class="uk-button uk-button-primary" onclick="modifyAmount()"></button>
+            <button type="button" class="uk-button uk-button-danger uk-modal-close">Cancel</button>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
     var types = {
             GETACCOUNTNUMBERS : "10",
@@ -86,21 +103,58 @@
             WITHDRAW : "120",
             INACITVEEX : "500",
             OVERDRAWEX : "510",
-            NULLPTR : "520"
+            NULLPTR : "520",
+            ILLEGALARG : "530"
             };
 
     $(document).ready(function () {
         refresh();
     });
 
+    function depositModal() {
+        var accNumber = $('#accNr').val();
+        $('#accModHeader').text('Deposit to ' + accNumber);
+        $('#accModButton').text('Deposit').val(accNumber);
+        $('#accModDeposit').val(true);
+        $('#accModAmount').val('');
+        UIkit.modal("#accMod").show();
+    }
+
+    function withdrawModal() {
+        var accNumber = $('#accNr').val();
+        $('#accModHeader').text('Withdraw to ' + accNumber);
+        $('#accModButton').text('Withdraw').val(accNumber);
+        $('#accModDeposit').val(false);
+        $('#accModAmount').val('');
+        UIkit.modal("#accMod").show();
+    }
+
     function refresh() {
+        var accSelect = $('#accNr');
+        var selected = accSelect.val();
         $.post(api.url, {type: types.GETACCOUNTNUMBERS}, function(data, textsuccess) {
             if(textsuccess == 'success') {
                 api.showSuccess('Refreshed!');
-                var accSelect = $('#accNr').empty();
+                accSelect.empty();
                 $.each(data, function(i, val) {
                     accSelect.append($('<option>').val(val).text(val));
                 });
+                if (selected != null && selected != '') {
+                    accSelect.val(selected);
+                }
+                if (data.length < 1) {
+                    $("#withdrawButton").prop("disabled", true);
+                    $("#depositButton").prop("disabled", true);
+                    $("#tranferButton").prop("disabled", true);
+                } else {
+                    if (data.length < 2) {
+                        $("#tranferButton").prop("disabled", true);
+                    } else {
+                        $("#tranferButton").prop("disabled", false);
+                    }
+                    $("#withdrawButton").prop("disabled", false);
+                    $("#depositButton").prop("disabled", false);
+                }
                 getAcc();
             } else {
                 api.showError(api.conError);
@@ -121,8 +175,8 @@
                 owner.val('');
                 balance.val('');
                 UIkit.modal("#newAccMod").hide();
-                refresh();
                 $('#accNr').val(data.message);
+                refresh();
             } else {
                 api.showError(api.conError);
             }
@@ -142,19 +196,71 @@
     }
 
     function getAcc() {
+        var bal = $('#balance').val('');
+        var own = $('#owner').val('');
         var accNumber = $('#accNr').val();
         $.post(api.url, {type: types.GETACC, accNumber: accNumber}, function(data, textsuccess) {
             if(textsuccess == 'success') {
                 if (data.message) {
                     api.showWarning('Account not Existing');
                 } else {
-                    $('#balance').val(data.balance);
-                    $('#owner').val(data.owner);
+                    bal.val(data.balance);
+                    own.val(data.owner);
                 }
             } else {
                 api.showError(api.conError);
             }
         });
+    }
+
+    function modifyAmount() {
+        var amount = $('#accModAmount').val();
+        var accNr = $('#accModButton').val();
+        if (amount != '' && amount > 0) {
+            if ($('#accModDeposit').val() === 'true') {
+                //DO deposit
+                $.post(api.url, {type: types.DEPOSIT, accNumber: accNr, amount: amount}, function(data, textsuccess) {
+                    if(textsuccess == 'success') {
+                        if (data.message === 'true') {
+                            api.showSuccess('Money deposed');
+                            UIkit.modal("#accMod").hide();
+                            refresh();
+                        } else if (data.message == types.NULLPTR) {
+                            api.showError("Account not Existing");
+                        } else if (data.message == types.INACITVEEX) {
+                            api.showError("Account is Inactive");
+                        } else if (data.message == types.ILLEGALARG) {
+                            api.showError("Illegal Amount");
+                        }
+                    } else {
+                        api.showError(api.conError);
+                    }
+                });
+            } else {
+                //do withdraw
+                $.post(api.url, {type: types.WITHDRAW, accNumber: accNr, amount: amount}, function(data, textsuccess) {
+                    if(textsuccess == 'success') {
+                        if (data.message === 'true') {
+                            api.showSuccess('Money withdrawn');
+                            UIkit.modal("#accMod").hide();
+                            refresh();
+                        } else if (data.message == types.NULLPTR) {
+                            api.showError("Account not Existing");
+                        } else if (data.message == types.INACITVEEX) {
+                            api.showError("Account is Inactive");
+                        } else if (data.message == types.ILLEGALARG) {
+                            api.showError("Illegal Amount");
+                        } else if (data.message == types.OVERDRAWEX) {
+                            api.showError("Account Overdrawing not allowed!");
+                        }
+                    } else {
+                        api.showError(api.conError);
+                    }
+                });
+            }
+        } else {
+            api.showError('Invalid Amount!')
+        }
     }
 
     var api = {

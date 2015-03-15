@@ -7,6 +7,8 @@ package servlet.bank;
 
 import bank.Account;
 import bank.Bank;
+import bank.InactiveException;
+import bank.OverdrawException;
 import bank.Server.ServerBank;
 import com.google.gson.Gson;
 
@@ -42,9 +44,11 @@ public class BankServlet extends HttpServlet {
     public static final String INACITVEEX = "500";
     public static final String OVERDRAWEX = "510";
     public static final String NULLPTR = "520";
+    public static final String ILLEGALARG = "530";
 
     private static final String MESSAGESTART = "{ \"message\": \"";
     private static final String MESSAGEEND = "\"}";
+    private static final String SUCCESS = MESSAGESTART + "true" + MESSAGEEND;
 
     private Bank bank;
 
@@ -68,14 +72,21 @@ public class BankServlet extends HttpServlet {
                 out.flush();
                 break;
             case CREATEACC:
-                out.write(MESSAGESTART + bank.createAccount(request.getParameter("owner")) + MESSAGEEND);
+                String nr = bank.createAccount(request.getParameter("owner"));
+                try {
+                    bank.getAccount(nr).deposit(Double.parseDouble(request.getParameter("balance")));
+                } catch (InactiveException e) {
+                    //Can not happen after first creation
+                }
+                out.write(MESSAGESTART + nr + MESSAGEEND);
+
                 out.flush();
                 break;
             case CLOSEACC:
                 out.write(MESSAGESTART + Boolean.toString(bank.closeAccount(request.getParameter("accNumber"))) + MESSAGEEND);
                 out.flush();
                 break;
-            case GETACC:
+            case GETACC: {
                 Account a = bank.getAccount(request.getParameter("accNumber"));
                 if (a == null) {
                     out.write(MESSAGESTART + NULLPTR + MESSAGEEND);
@@ -84,66 +95,66 @@ public class BankServlet extends HttpServlet {
                     out.write(new Gson().toJson(a));
                     out.flush();
                 }
-                break;/*
+                break;
+            }
             case TRANSFER:
                 try {
-                    bank.transfer(bank.getAccount(in.readLine()), bank.getAccount(in.readLine()), Double.parseDouble(in.readLine()));
-                    out.write("true");
-                    out.newLine();
-                    out.flush();
+                    Account from = bank.getAccount(request.getParameter("from"));
+                    Account to = bank.getAccount(request.getParameter("to"));
+                    if (from != null && to != null) {
+                        bank.transfer(from, to, Double.parseDouble(request.getParameter("amount")));
+                        out.write(SUCCESS);
+                    } else {
+                        out.write(MESSAGESTART + NULLPTR + MESSAGEEND);
+                    }
                 } catch (InactiveException e) {
-                    out.write(INACITVEEX);
-                    out.newLine();
-                    out.flush();
-                    e.printStackTrace();
+                    out.write(MESSAGESTART + INACITVEEX + MESSAGEEND);
                 } catch (OverdrawException e) {
-                    out.write(OVERDRAWEX);
-                    out.newLine();
-                    out.flush();
-                    e.printStackTrace();
+                    out.write(MESSAGESTART + OVERDRAWEX + MESSAGEEND);
+                } catch (IllegalArgumentException e) {
+                    out.write(MESSAGESTART + ILLEGALARG + MESSAGEEND);
                 }
-                break;
-            case SETINACITVE:
-                bank.getAccount(in.readLine()).setInactive();
+                out.flush();
                 break;
             case DEPOSIT:
                 try {
-                    bank.getAccount(in.readLine()).deposit(Double.parseDouble(in.readLine()));
-                    out.write("true");
-                    out.newLine();
-                    out.flush();
+                    Account a = bank.getAccount(request.getParameter("accNumber"));
+                    if (a != null) {
+                        a.deposit(Double.parseDouble(request.getParameter("amount")));
+                        out.write(SUCCESS);
+                    } else {
+                        out.write(MESSAGESTART + NULLPTR + MESSAGEEND);
+                    }
                 } catch (InactiveException e) {
-                    out.write(INACITVEEX);
-                    out.newLine();
-                    out.flush();
-                    e.printStackTrace();
+                    out.write(MESSAGESTART + INACITVEEX + MESSAGEEND);
+                } catch (IllegalArgumentException e) {
+                    out.write(MESSAGESTART + ILLEGALARG + MESSAGEEND);
                 }
+                out.flush();
                 break;
             case WITHDRAW:
                 try {
-                    bank.getAccount(in.readLine()).withdraw(Double.parseDouble(in.readLine()));
-                    out.write("true");
-                    out.newLine();
-                    out.flush();
+                    Account a = bank.getAccount(request.getParameter("accNumber"));
+                    if (a != null) {
+                        a.withdraw(Double.parseDouble(request.getParameter("amount")));
+                        out.write(SUCCESS);
+                    } else {
+                        out.write(MESSAGESTART + NULLPTR + MESSAGEEND);
+                    }
                 } catch (InactiveException e) {
-                    out.write(INACITVEEX);
-                    out.newLine();
-                    out.flush();
-                    e.printStackTrace();
+                    out.write(MESSAGESTART + INACITVEEX + MESSAGEEND);
+                } catch (IllegalArgumentException e) {
+                    out.write(MESSAGESTART + ILLEGALARG + MESSAGEEND);
                 } catch (OverdrawException e) {
-                    out.write(OVERDRAWEX);
-                    out.newLine();
-                    out.flush();
-                    e.printStackTrace();
+                    out.write(MESSAGESTART + OVERDRAWEX + MESSAGEEND);
                 }
-                break;
-                */
-            default:
-                /*
-                out.write("Error");
-                out.newLine();
                 out.flush();
-                */
+                break;
+
+            default:
+                out.write(MESSAGESTART + "Error" + MESSAGEEND);
+                out.flush();
+
         }
 
 
