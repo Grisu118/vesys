@@ -75,24 +75,16 @@ public class BankServlet extends HttpServlet {
                 out.write(MESSAGESTART + Boolean.toString(bank.closeAccount(request.getParameter("accNumber"))) + MESSAGEEND);
                 out.flush();
                 break;
-                /*
             case GETACC:
-                Account a = bank.getAccount(in.readLine());
+                Account a = bank.getAccount(request.getParameter("accNumber"));
                 if (a == null) {
-                    System.out.println("Is null: ");
-                    out.write(NULLPTR);
-                    out.newLine();
+                    out.write(MESSAGESTART + NULLPTR + MESSAGEEND);
                     out.flush();
                 } else {
-                    out.write(a.getOwner());
-                    out.newLine();
-                    out.write(Double.toString(a.getBalance()));
-                    out.newLine();
-                    out.write(Boolean.toString(a.isActive()));
-                    out.newLine();
+                    out.write(new Gson().toJson(a));
                     out.flush();
                 }
-                break;
+                break;/*
             case TRANSFER:
                 try {
                     bank.transfer(bank.getAccount(in.readLine()), bank.getAccount(in.readLine()), Double.parseDouble(in.readLine()));

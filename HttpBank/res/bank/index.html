@@ -19,7 +19,7 @@
             <div class="uk-width-1-2">
                 <div class="uk-form-row">
                     <label class="uk-form-label" for="accNr">Account Nr: </label>
-                    <select id="accNr" name="accNr">
+                    <select id="accNr" name="accNr" onchange="getAcc()">
 
                     </select>
                 </div>
@@ -65,7 +65,7 @@
             </div>
             <div class="uk-form-row">
                 <label class="uk-form-label" for="balance_create">Balance: </label>
-                <input type="number" name="balance_create" id="balance_create" >
+                <input type="number" min="0" name="balance_create" id="balance_create" >
             </div>
         </form>
         <div class="uk-modal-footer">
@@ -101,6 +101,7 @@
                 $.each(data, function(i, val) {
                     accSelect.append($('<option>').val(val).text(val));
                 });
+                getAcc();
             } else {
                 api.showError(api.conError);
             }
@@ -110,6 +111,10 @@
     function createAcc() {
         var owner = $('#owner_create');
         var balance = $('#balance_create');
+        if (owner.val() == '' || balance.val() < 0) {
+            api.showError('Wrong Argumtens!');
+            return;
+        }
         $.post(api.url, {type: types.CREATEACC, owner: owner.val(), balance: balance.val()}, function(data, textsuccess) {
             if(textsuccess == 'success') {
                 api.showSuccess('Account Created!');
@@ -130,6 +135,22 @@
             if(textsuccess == 'success') {
                 api.showSuccess('Account Closed!');
                 refresh();
+            } else {
+                api.showError(api.conError);
+            }
+        });
+    }
+
+    function getAcc() {
+        var accNumber = $('#accNr').val();
+        $.post(api.url, {type: types.GETACC, accNumber: accNumber}, function(data, textsuccess) {
+            if(textsuccess == 'success') {
+                if (data.message) {
+                    api.showWarning('Account not Existing');
+                } else {
+                    $('#balance').val(data.balance);
+                    $('#owner').val(data.owner);
+                }
             } else {
                 api.showError(api.conError);
             }
