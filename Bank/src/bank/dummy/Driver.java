@@ -5,6 +5,7 @@
 
 package bank.dummy;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -99,7 +100,12 @@ public class Driver implements BankDriver {
 			return true;
 		}
 
-		@Override
+        @Override
+        public boolean setInactive() throws IOException {
+            return false;
+        }
+
+        @Override
 		public void deposit(double amount) {
 			balance += amount;
 		}

@@ -4,11 +4,11 @@
     <property file="build.properties" />
 
     <path id="bank.class.path">
-
+<!--
         <fileset dir="${lib.dir}">
             <include name="*.jar" />
         </fileset>
-
+-->
         <dirset dir="${bin.dir}"/>
     </path>
 
@@ -67,25 +67,4 @@
         </java>
     </target>
 
-    <target name="bank.war" depends="compile">
-        <war warfile="${basedir}/bank.war" needxmlfile="false">
-            <classes dir="${bin.dir}" >
-                <include name="bank/Server/*.class" />
-            </classes>
-            <fileset dir="${basedir}/web">
-                <include name="**/*.jsp"/>
-                <include name="**/*.html"/>
-                <include name="**/*.js"/>
-                <include name="**/*.css"/>
-            </fileset>
-        </war>
-    </target>
-
-    <target name="bank.deploy" depends="bank.war">
-        <copy file="${basedir}/bank.war" todir="${tomcat.home}/webapps"/>
-    </target>
-
-    <target name="bank.undeploy">
-        <delete file="${tomcat.home}/webapps/bank.war"/>
-    </target>
 </project>

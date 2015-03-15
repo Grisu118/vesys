@@ -11,7 +11,7 @@
 	<property environment="env"/>
 	<property name="tomcat.home" value="${env.CATALINA_HOME}"/>
 -->
-	<property name="tomcat.home" value="C:\Program Files (x86)\xampp\tomcat"/>
+	<property name="tomcat.home" value="C:\xampp\tomcat"/>
 		
 	<!-- Build classpath -->
 	<path id="classpath">
