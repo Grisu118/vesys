@@ -181,9 +181,6 @@
 
     function refresh(selected) {
         var accSelect = $('#accNr');
-        if (!selected) {
-            selected = accSelect.val();
-        }
         $.post(api.url, {type: types.GETACCOUNTNUMBERS}, function(data, textsuccess) {
             if(textsuccess == 'success') {
                 api.showSuccess('Refreshed!');
@@ -192,6 +189,12 @@
                     accounts[i] = val;
                     accSelect.append($('<option>').val(val).text(val));
                 });
+                if (!selected) {
+                    selected = accSelect.val();
+                    if (!$.inArray(selected, accounts)) {
+                        selected = accounts[0];
+                    }
+                }
                 if (selected != null && selected != '') {
                     accSelect.val(selected);
                 }
@@ -218,7 +221,7 @@
     function createAcc() {
         var owner = $('#owner_create');
         var balance = $('#balance_create');
-        if (owner.val() == '' || balance.val() < 0) {
+        if (owner.val() == '' || balance.val() != '' && (!$.isNumeric(balance.val()) || balance.val() < 0)) {
             api.showError('Wrong Argumtens!');
             return;
         }
@@ -273,7 +276,7 @@
     function modifyAmount() {
         var amount = $('#accModAmount').val();
         var accNr = $('#accModButton').val();
-        if (amount != '' && amount > 0) {
+        if (amount != '' && $.isNumeric(amount) && amount > 0) {
             if ($('#accModDeposit').val() === 'true') {
                 //DO deposit
                 $.post(api.url, {type: types.DEPOSIT, accNumber: accNr, amount: amount}, function(data, textsuccess) {
@@ -324,7 +327,6 @@
         var fromField = $('#transModFrom');
         var toField = $('#transModTo');
         var amountField = $('#transModAmount');
-
         $.post(api.url, {type: types.TRANSFER, from: fromField.val(), to: toField.val(), amount: amountField.val()}, function(data, textsuccess) {
             if(textsuccess == 'success') {
                 if (data.message === 'true') {
