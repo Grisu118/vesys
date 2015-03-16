@@ -70,7 +70,7 @@
     <target name="generate.jar" depends="compile" description="">
         <delete dir="${basedir}/../HttpBank/lib/bank.jar"/>
         <jar destfile="${basedir}/../HttpBank/lib/bank.jar">
-            <fileset dir="${bin.dir}/bank" excludes="dummy/** gui/** local/** Server/SocketServer* sockets/** BankDriver* Client*"/>
+            <fileset dir="${bin.dir}" excludes="**/dummy/** **/gui/** **/local/** **/Server/SocketServer* **/sockets/** **/BankDriver* **/Client*"/>
         </jar>
     </target>
 
