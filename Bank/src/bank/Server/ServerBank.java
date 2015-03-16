@@ -52,7 +52,8 @@ public class ServerBank implements Bank {
 
     @Override
     public boolean closeAccount(String number) throws IOException {
-        return accounts.get(number).setInactive();
+        Account a = accounts.get(number);
+        return a != null && a.setInactive();
     }
 
     @Override
@@ -63,8 +64,12 @@ public class ServerBank implements Bank {
     @Override
     public void transfer(bank.Account from, bank.Account to, double amount)
             throws IOException, InactiveException, OverdrawException {
-        from.withdraw(amount);
-        to.deposit(amount);
+        if (from != null && from.isActive() && to != null && to.isActive()) {
+            from.withdraw(amount);
+            to.deposit(amount);
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 }
 

@@ -54,7 +54,10 @@ public class ServerAccount implements Account {
         if (!active) {
             throw new InactiveException(number + " is Inactive!");
         }
-        balance += Math.abs(amount);
+        if (amount < 0) {
+            throw new IllegalArgumentException();
+        }
+        balance += amount;
     }
 
     @Override
@@ -62,9 +65,12 @@ public class ServerAccount implements Account {
         if (!active) {
             throw new InactiveException(number + " is Inactive!");
         }
-        if (balance < Math.abs(amount)) {
+        if (balance < 0) {
+            throw new IllegalArgumentException();
+        }
+        if (balance < amount) {
             throw new OverdrawException();
         }
-        balance -= Math.abs(amount);
+        balance -= amount;
     }
 }
