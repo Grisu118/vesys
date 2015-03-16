@@ -60,8 +60,8 @@
                 <include name="**/*.woff"/>
 			</fileset>
             <lib dir="${basedir}/lib">
-                <include name="gson*.jar" />
-                <include name="bank.jar" />
+                <include name="gson*.jar" ></include>
+                <include name="bank.jar" ></include>
             </lib>
 		</war>
 	</target>

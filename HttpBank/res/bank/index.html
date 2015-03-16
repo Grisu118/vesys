@@ -183,7 +183,7 @@
         var accSelect = $('#accNr');
         $.post(api.url, {type: types.GETACCOUNTNUMBERS}, function(data, textsuccess) {
             if(textsuccess == 'success') {
-                api.showSuccess('Refreshed!');
+                //api.showSuccess('Refreshed!');
                 accSelect.empty();
                 $.each(data, function(i, val) {
                     accounts[i] = val;

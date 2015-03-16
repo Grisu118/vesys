@@ -1,8 +1,3 @@
-/*
- * Copyright (c) 2000-2015 Fachhochschule Nordwestschweiz (FHNW)
- * All Rights Reserved. 
- */
-
 package servlet.bank;
 
 import bank.Account;
@@ -25,10 +20,7 @@ import java.util.List;
 
 @WebServlet(
         name="BankServlet",
-        urlPatterns={"/req"},
-        initParams={
-                @WebInitParam(name="simpleParam", value="paramValue")
-        }
+        urlPatterns={"/req"}
 )
 public class BankServlet extends HttpServlet {
 
