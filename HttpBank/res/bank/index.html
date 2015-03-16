@@ -221,17 +221,22 @@
     function createAcc() {
         var owner = $('#owner_create');
         var balance = $('#balance_create');
-        if (owner.val() == '' || balance.val() != '' && (!$.isNumeric(balance.val()) || balance.val() < 0)) {
+        if (owner.val() == '' || balance.val() < 0) {
             api.showError('Wrong Argumtens!');
             return;
         }
         $.post(api.url, {type: types.CREATEACC, owner: owner.val(), balance: balance.val()}, function(data, textsuccess) {
             if(textsuccess == 'success') {
-                api.showSuccess('Account Created!');
-                owner.val('');
-                balance.val('');
-                modals.newAcc.hide();
-                refresh(data.message);
+                if (data.message == types.ILLEGALARG) {
+                    api.showError('Invalid Arguments!');
+                } else {
+                    api.showSuccess('Account Created!');
+                    owner.val('');
+                    balance.val('');
+                    modals.newAcc.hide();
+                    refresh(data.message);
+                }
+
             } else {
                 api.showError(api.conError);
             }

@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 @WebServlet(
         name="BankServlet",
@@ -38,7 +37,6 @@ public class BankServlet extends HttpServlet {
     public static final String CLOSEACC = "30";
     public static final String GETACC = "40";
     public static final String TRANSFER = "50";
-    public static final String SETINACITVE = "100";
     public static final String DEPOSIT = "110";
     public static final String WITHDRAW = "120";
     public static final String INACITVEEX = "500";
@@ -74,11 +72,18 @@ public class BankServlet extends HttpServlet {
             case CREATEACC:
                 String nr = bank.createAccount(request.getParameter("owner"));
                 try {
-                    bank.getAccount(nr).deposit(Double.parseDouble(request.getParameter("balance")));
+                    String bal = request.getParameter("balance");
+                    if ("".equals(bal)) {
+                        bal = "0";
+                    }
+                    bank.getAccount(nr).deposit(Double.parseDouble(bal));
+                    out.write(MESSAGESTART + nr + MESSAGEEND);
                 } catch (InactiveException e) {
                     //Can not happen after first creation
+                } catch (IllegalArgumentException e) {
+                    out.write(MESSAGESTART + ILLEGALARG + MESSAGEEND);
                 }
-                out.write(MESSAGESTART + nr + MESSAGEEND);
+
 
                 out.flush();
                 break;

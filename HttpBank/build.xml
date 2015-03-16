@@ -11,7 +11,7 @@
 	<property environment="env"/>
 	<property name="tomcat.home" value="${env.CATALINA_HOME}"/>
 -->
-	<property name="tomcat.home" value="C:\Program Files (x86)\xampp\tomcat"/> <!--Program Files (x86) -->
+	<property name="tomcat.home" value="C:\xampp\tomcat"/> <!--Program Files (x86) -->
 
 		
 	<!-- Build classpath -->
@@ -60,8 +60,8 @@
                 <include name="**/*.woff"/>
 			</fileset>
             <lib dir="${basedir}/lib">
-                <include name="gson*.jar"></include>
-                <include name="bank.jar"></include>
+                <include name="gson*.jar" />
+                <include name="bank.jar" />
             </lib>
 		</war>
 	</target>
