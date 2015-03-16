@@ -40,7 +40,7 @@
                     <button type="button" id="withdrawButton" class="uk-button uk-button-danger" onclick="withdrawModal()">Withdraw Money</button>
                 </div>
                 <div class="uk-form-row">
-                    <button type="button" id="tranferButton" class="uk-button">Transfer Money</button>
+                    <button type="button" id="tranferButton" class="uk-button" onclick="transferModal()">Transfer Money</button>
                 </div>
             </div>
         </div>
@@ -91,6 +91,32 @@
         </div>
     </div>
 </div>
+
+<div id="transMod" class="uk-modal">
+    <div class="uk-modal-dialog">
+        <div class="uk-modal-header" >Transfer</div>
+        <form class="uk-form uk-form-horizontal">
+            <div class="uk-form-row">
+                <label class="uk-form-label" for="transModFrom">From: </label>
+                <input type="text" name="transModFrom" id="transModFrom" readonly>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label" for="transModTo">To: </label>
+                <select id="transModTo" >
+
+                </select>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label" for="transModAmount">Amount: </label>
+                <input type="number" name="transModAmount" id="transModAmount">
+            </div>
+        </form>
+        <div class="uk-modal-footer">
+            <button type="button" class="uk-button uk-button-primary" onclick="transferMoney()">Transfer Money</button>
+            <button type="button" class="uk-button uk-button-danger uk-modal-close">Cancel</button>
+        </div>
+    </div>
+</div>
 <script type="text/javascript">
     var types = {
             GETACCOUNTNUMBERS : "10",
@@ -107,9 +133,33 @@
             ILLEGALARG : "530"
             };
 
+    var accounts = [];
+
+    var modals = {
+        newAcc: null,
+        withdraw: null,
+        transfer: null
+    };
+
     $(document).ready(function () {
+        modals.transfer = UIkit.modal("#transMod");
+        modals.withdraw = UIkit.modal("#accMod");
+        modals.newAcc = UIkit.modal("#newAccMod");
         refresh();
     });
+
+    function transferModal() {
+        var accNumber = $('#accNr').val();
+        $('#transModFrom').val(accNumber);
+        var s = $('#transModTo').empty();
+        $.each(accounts, function(i, val){
+            if (val != accNumber) {
+                s.append($('<option>').val(val).text(val));
+            }
+        });
+        $('#transModAmount').val('');
+        modals.transfer.show();
+    }
 
     function depositModal() {
         var accNumber = $('#accNr').val();
@@ -117,7 +167,7 @@
         $('#accModButton').text('Deposit').val(accNumber);
         $('#accModDeposit').val(true);
         $('#accModAmount').val('');
-        UIkit.modal("#accMod").show();
+        modals.withdraw.show();
     }
 
     function withdrawModal() {
@@ -126,17 +176,20 @@
         $('#accModButton').text('Withdraw').val(accNumber);
         $('#accModDeposit').val(false);
         $('#accModAmount').val('');
-        UIkit.modal("#accMod").show();
+        modals.withdraw.show();
     }
 
-    function refresh() {
+    function refresh(selected) {
         var accSelect = $('#accNr');
-        var selected = accSelect.val();
+        if (!selected) {
+            selected = accSelect.val();
+        }
         $.post(api.url, {type: types.GETACCOUNTNUMBERS}, function(data, textsuccess) {
             if(textsuccess == 'success') {
                 api.showSuccess('Refreshed!');
                 accSelect.empty();
                 $.each(data, function(i, val) {
+                    accounts[i] = val;
                     accSelect.append($('<option>').val(val).text(val));
                 });
                 if (selected != null && selected != '') {
@@ -174,9 +227,8 @@
                 api.showSuccess('Account Created!');
                 owner.val('');
                 balance.val('');
-                UIkit.modal("#newAccMod").hide();
-                $('#accNr').val(data.message);
-                refresh();
+                modals.newAcc.hide();
+                refresh(data.message);
             } else {
                 api.showError(api.conError);
             }
@@ -187,8 +239,13 @@
         var accNumber = $('#accNr').val();
         $.post(api.url, {type: types.CLOSEACC, accNumber: accNumber}, function(data, textsuccess) {
             if(textsuccess == 'success') {
-                api.showSuccess('Account Closed!');
-                refresh();
+                if (data.message === 'true') {
+                    api.showSuccess('Account Closed!');
+                    refresh();
+                    $('#accNr').val(accounts[0]);
+                } else {
+                    api.showWarning('Not Closed, already closed or is money on the Account?');
+                }
             } else {
                 api.showError(api.conError);
             }
@@ -223,7 +280,7 @@
                     if(textsuccess == 'success') {
                         if (data.message === 'true') {
                             api.showSuccess('Money deposed');
-                            UIkit.modal("#accMod").hide();
+                            modals.withdraw.hide();
                             refresh();
                         } else if (data.message == types.NULLPTR) {
                             api.showError("Account not Existing");
@@ -242,7 +299,7 @@
                     if(textsuccess == 'success') {
                         if (data.message === 'true') {
                             api.showSuccess('Money withdrawn');
-                            UIkit.modal("#accMod").hide();
+                            modals.withdraw.hide();
                             refresh();
                         } else if (data.message == types.NULLPTR) {
                             api.showError("Account not Existing");
@@ -261,6 +318,32 @@
         } else {
             api.showError('Invalid Amount!')
         }
+    }
+
+    function transferMoney() {
+        var fromField = $('#transModFrom');
+        var toField = $('#transModTo');
+        var amountField = $('#transModAmount');
+
+        $.post(api.url, {type: types.TRANSFER, from: fromField.val(), to: toField.val(), amount: amountField.val()}, function(data, textsuccess) {
+            if(textsuccess == 'success') {
+                if (data.message === 'true') {
+                    api.showSuccess('Money Transfered');
+                    modals.transfer.hide();
+                    refresh();
+                } else if (data.message == types.NULLPTR) {
+                    api.showError("Account not Existing");
+                } else if (data.message == types.INACITVEEX) {
+                    api.showError("Account is Inactive");
+                } else if (data.message == types.ILLEGALARG) {
+                    api.showError("Illegal Amount");
+                } else if (data.message == types.OVERDRAWEX) {
+                    api.showError("Account Overdrawing not allowed!");
+                }
+            } else {
+                api.showError(api.conError);
+            }
+        });
     }
 
     var api = {
