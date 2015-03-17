@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/04_Internet2/04_Internet2.iml" filepath="$PROJECT_DIR$/04_Internet2/04_Internet2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/05_JAX-WS/05_JAX-WS.iml" filepath="$PROJECT_DIR$/05_JAX-WS/05_JAX-WS.iml" />
       <module fileurl="file://$PROJECT_DIR$/Bank/Bank.iml" filepath="$PROJECT_DIR$/Bank/Bank.iml" />
       <module fileurl="file://$PROJECT_DIR$/HttpBank/HttpBank.iml" filepath="$PROJECT_DIR$/HttpBank/HttpBank.iml" />
     </modules>
