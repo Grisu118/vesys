@@ -37,7 +37,6 @@ public class DoodleClient1 {
 			}
 			System.out.println();
 		}
-		// TODO: list all the participants with their name and their preferences
 	}
 
 }
