@@ -6,8 +6,10 @@
       <module fileurl="file://$PROJECT_DIR$/05_JAX-WS/05_JAX-WS.iml" filepath="$PROJECT_DIR$/05_JAX-WS/05_JAX-WS.iml" />
       <module fileurl="file://$PROJECT_DIR$/06_WebServices2/06_WebServices2.iml" filepath="$PROJECT_DIR$/06_WebServices2/06_WebServices2.iml" />
       <module fileurl="file://$PROJECT_DIR$/08_REST2/08_REST2.iml" filepath="$PROJECT_DIR$/08_REST2/08_REST2.iml" />
+      <module fileurl="file://$PROJECT_DIR$/10_RMI2/10_RMI2.iml" filepath="$PROJECT_DIR$/10_RMI2/10_RMI2.iml" />
       <module fileurl="file://$PROJECT_DIR$/Bank/Bank.iml" filepath="$PROJECT_DIR$/Bank/Bank.iml" />
       <module fileurl="file://$PROJECT_DIR$/HttpBank/HttpBank.iml" filepath="$PROJECT_DIR$/HttpBank/HttpBank.iml" />
+      <module fileurl="file://$PROJECT_DIR$/RESTBank/RESTBank.iml" filepath="$PROJECT_DIR$/RESTBank/RESTBank.iml" />
     </modules>
   </component>
 </project>
