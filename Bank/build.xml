@@ -58,6 +58,12 @@
         </java>
     </target>
 
+    <target name="run.bank.JMS" depends="compile" description="launches sockets Server">
+        <java classname="bank.jms.Driver" fork="yes" dir=".">
+            <classpath refid="bank.class.path"/>
+        </java>
+    </target>
+
     <target name="run.sockets.BLPC0001" depends="compile" description="launches sockets bank">
         <java classname="bank.Client" fork="yes" dir=".">
             <arg value="bank.sockets.Driver"/>
