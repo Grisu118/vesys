@@ -523,6 +523,7 @@ public class BankGUI extends JFrame {
 				ignoreItemChanges=false;
 				
 				// clean up local accounts map
+                accounts.clear(); //Benjamin, benötigt damit auch schon in der Liste vorhandene Accounts geupdated werden.
 				for(String key : s){
 					if(!accounts.containsKey(key)){
 						accounts.put(key, bank.getAccount(key));

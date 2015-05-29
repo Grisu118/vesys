@@ -65,7 +65,7 @@ public class ServerAccount implements Account {
         if (!active) {
             throw new InactiveException(number + " is Inactive!");
         }
-        if (balance < 0) {
+        if (balance < 0 || amount < 0) {
             throw new IllegalArgumentException();
         }
         if (balance < amount) {

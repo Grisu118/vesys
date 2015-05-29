@@ -23,7 +23,6 @@ public class Driver implements BankDriver2 {
 
     @Override
     public void registerUpdateHandler(UpdateHandler handler) throws IOException {
-        System.out.println("Register");
         this.handler.registerUpdateHandler(handler);
     }
 
@@ -146,7 +145,6 @@ public class Driver implements BankDriver2 {
                 this.number = args[0];
                 this.owner = args[1];
                 this.balance = Double.parseDouble(args[2]);
-                System.out.println(balance);
                 this.isActive = Boolean.parseBoolean(args[3]);
             }
 
