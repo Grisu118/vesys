@@ -4,13 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import akka.actor.*;
 import scala.Option;
-import akka.actor.ActorRef;
-import akka.actor.ActorSystem;
-import akka.actor.Props;
-import akka.actor.UntypedActor;
 
 import com.typesafe.config.ConfigFactory;
+import scala.concurrent.duration.Duration;
 
 public class ChatServer {
 
@@ -95,6 +93,12 @@ public class ChatServer {
 			super.postStop();
 		}
 
+        @Override
+		public SupervisorStrategy supervisorStrategy() {
+            return strategy;
+        }
+
+        private static SupervisorStrategy strategy = new OneForOneStrategy(10, Duration.create("1 minute"), (Throwable t) -> { return SupervisorStrategy.resume(); } );
 	}
 
 }
