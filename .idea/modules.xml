@@ -9,6 +9,7 @@
       <module fileurl="file://$PROJECT_DIR$/10_RMI2/10_RMI2.iml" filepath="$PROJECT_DIR$/10_RMI2/10_RMI2.iml" />
       <module fileurl="file://$PROJECT_DIR$/11_JMS/11_JMS.iml" filepath="$PROJECT_DIR$/11_JMS/11_JMS.iml" />
       <module fileurl="file://$PROJECT_DIR$/12_Websockets/12_Websockets.iml" filepath="$PROJECT_DIR$/12_Websockets/12_Websockets.iml" />
+      <module fileurl="file://$PROJECT_DIR$/13_Akka/13_Akka.iml" filepath="$PROJECT_DIR$/13_Akka/13_Akka.iml" />
       <module fileurl="file://$PROJECT_DIR$/Bank/Bank.iml" filepath="$PROJECT_DIR$/Bank/Bank.iml" />
       <module fileurl="file://$PROJECT_DIR$/HttpBank/HttpBank.iml" filepath="$PROJECT_DIR$/HttpBank/HttpBank.iml" />
       <module fileurl="file://$PROJECT_DIR$/RESTBank/RESTBank.iml" filepath="$PROJECT_DIR$/RESTBank/RESTBank.iml" />
